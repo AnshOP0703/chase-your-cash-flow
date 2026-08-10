@@ -1,117 +1,73 @@
-import { useState } from "react";
-import { Reveal } from "./Reveal";
+import { Check } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-type Currency = "INR" | "USD";
-
-const tiers = [
-  {
-    name: "Free",
-    price: { INR: "₹0", USD: "$0" },
-    tagline: "For your first few invoices.",
-    features: ["Up to 5 invoices a month", "Email reminders", "One payment gateway"],
-    popular: false,
-  },
+const plans = [
+  { name: "Free", price: "₹0", note: "3 invoices / month", points: ["Email reminders", "1 client"] },
   {
     name: "Pro",
-    price: { INR: "₹799", USD: "$19" },
-    tagline: "For anyone tired of chasing.",
-    features: ["Unlimited invoices", "WhatsApp + SMS chasing", "Auto-reconciliation", "All gateways"],
-    popular: true,
+    price: "₹799",
+    suffix: "/mo",
+    note: "Unlimited invoices",
+    points: ["Email + WhatsApp + SMS", "Custom chase schedules", "Client payment scores"],
+    featured: true,
   },
-  {
-    name: "Business",
-    price: { INR: "₹1,999", USD: "$49" },
-    tagline: "For teams with real volume.",
-    features: ["Multi-user access", "Multi-currency", "Custom reminder rules", "Priority support"],
-    popular: false,
-  },
+  { name: "Business", price: "₹1,999", suffix: "/mo", note: "For teams", points: ["5 seats", "Recurring invoices", "Priority support"] },
 ];
 
 export function Pricing() {
-  const [currency, setCurrency] = useState<Currency>("INR");
-
   return (
-    <section id="pricing" aria-labelledby="pricing-heading" className="container-page scroll-mt-20 py-20 sm:py-28">
-      <Reveal className="flex flex-wrap items-end justify-between gap-6">
-        <div>
-          <h2 id="pricing-heading" className="text-3xl font-semibold sm:text-5xl">
-            Pricing without homework.
-          </h2>
-          <p className="mt-4 max-w-xl leading-relaxed text-muted-foreground">
-            Every plan is free while Tagada is in beta. Prices below are what you'll pay after.
-          </p>
-        </div>
-        <div
-          role="group"
-          aria-label="Currency"
-          className="inline-flex rounded-lg border border-border bg-card p-1"
-        >
-          {(["INR", "USD"] as Currency[]).map((c) => (
-            <button
-              key={c}
-              type="button"
-              aria-pressed={currency === c}
-              onClick={() => setCurrency(c)}
+    <section id="pricing" aria-labelledby="pricing-heading" className="scroll-mt-20 border-b border-border py-24 sm:py-32">
+      <div className="container-page">
+        <h2 id="pricing-heading" className="text-3xl font-semibold tracking-[-0.03em] sm:text-5xl">
+          Simple pricing. <span className="text-muted-foreground">Less chasing.</span>
+        </h2>
+        <ul className="mt-14 grid items-center gap-6 md:grid-cols-3">
+          {plans.map((p) => (
+            <li
+              key={p.name}
               className={cn(
-                "rounded-md px-4 py-2 text-sm font-semibold transition-colors focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none",
-                currency === c ? "bg-secondary text-foreground" : "text-muted-foreground hover:text-foreground",
+                "rounded-xl border p-7 transition-colors",
+                p.featured
+                  ? "border-primary/60 bg-surface md:scale-[1.04] md:py-10"
+                  : "border-border bg-background hover:bg-surface",
               )}
             >
-              {c === "INR" ? "INR ₹" : "USD $"}
-            </button>
-          ))}
-        </div>
-      </Reveal>
-
-      <ul className="mt-12 grid gap-4 md:grid-cols-3">
-        {tiers.map((t, i) => (
-          <Reveal as="li" key={t.name} delay={i * 90}>
-            <article
-              className={cn(
-                "flex h-full flex-col rounded-lg border bg-card p-7",
-                t.popular ? "border-primary" : "border-border",
-              )}
-            >
-              <div className="flex items-center justify-between gap-3">
-                <h3 className="text-lg font-semibold">{t.name}</h3>
-                {t.popular && (
-                  <span className="rounded-md bg-primary px-3 py-1 text-xs font-semibold text-primary-foreground">
-                    Most popular
+              <div className="flex items-center justify-between">
+                <p className="text-xs tracking-[0.16em] text-muted-foreground uppercase">{p.name}</p>
+                {p.featured && (
+                  <span className="rounded bg-primary px-2 py-0.5 text-[0.7rem] font-semibold text-primary-foreground">
+                    Popular
                   </span>
                 )}
               </div>
-              <p className="mt-4 text-4xl font-semibold tracking-tight">
-                {t.price[currency]}
-                <span className="ml-1 text-base font-normal text-muted-foreground">/ month</span>
+              <p className="mt-5 text-4xl font-semibold tracking-tight tabular-nums">
+                {p.price}
+                {p.suffix && <span className="text-base font-normal text-muted-foreground">{p.suffix}</span>}
               </p>
-              <p className="mt-2 text-sm text-muted-foreground">{t.tagline}</p>
-              <span className="mt-4 w-fit rounded-md border border-border px-3 py-1 text-xs font-medium text-muted-foreground">
-                Free during beta
-              </span>
-              <ul className="mt-6 flex-1 space-y-3 text-muted-foreground">
-                {t.features.map((f) => (
-                  <li key={f} className="flex gap-3">
-                    <span aria-hidden="true" className="mt-2 size-1 shrink-0 rounded-full bg-muted-foreground/50" />
-                    <span>{f}</span>
+              <p className="mt-2 text-sm text-muted-foreground">{p.note}</p>
+              <ul className="mt-6 space-y-2.5 text-sm">
+                {p.points.map((pt) => (
+                  <li key={pt} className="flex items-start gap-2.5">
+                    <Check aria-hidden="true" strokeWidth={2} className="mt-0.5 size-3.5 shrink-0 text-muted-foreground" />
+                    <span>{pt}</span>
                   </li>
                 ))}
               </ul>
               <a
-                href="#final-cta"
+                href="#early-access"
                 className={cn(
-                  "mt-8 rounded-lg px-4 py-3 text-center text-sm font-semibold transition focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background focus-visible:outline-none",
-                  t.popular
+                  "mt-8 flex h-11 items-center justify-center rounded-md text-sm font-semibold transition focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none",
+                  p.featured
                     ? "bg-primary text-primary-foreground hover:brightness-110"
-                    : "border border-border hover:bg-secondary",
+                    : "border border-border hover:border-foreground/40",
                 )}
               >
-                Claim your spot
+                Get early access
               </a>
-            </article>
-          </Reveal>
-        ))}
-      </ul>
+            </li>
+          ))}
+        </ul>
+      </div>
     </section>
   );
 }

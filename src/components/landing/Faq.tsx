@@ -1,4 +1,3 @@
-import { Reveal } from "./Reveal";
 import {
   Accordion,
   AccordionContent,
@@ -7,63 +6,30 @@ import {
 } from "@/components/ui/accordion";
 
 export const faqs = [
-  {
-    q: "Do I need to know accounting to use this?",
-    a: "No. Tagada is built for business owners who are not accountants and do not want to become one. You enter line items and a client, and Tagada handles tax calculation, numbering, and the payment record behind the scenes.",
-  },
-  {
-    q: "Will the automated reminders annoy my clients?",
-    a: "Reminder frequency and tone are set by you, and Tagada starts polite by default. Every reminder stops automatically the moment the invoice is paid, so no client ever gets chased for money they already sent.",
-  },
-  {
-    q: "Can I control the tone and timing of every message?",
-    a: "Yes. You choose how many days pass between each reminder and whether the message reads gentle, standard, or firm, and you can override the copy on any individual invoice. Tagada never sends anything you have not approved as a cadence first.",
-  },
-  {
-    q: "Does it handle GST?",
-    a: "Yes. Tagada produces GST-compliant invoices for Indian businesses, including GSTIN, HSN or SAC codes, and correct CGST, SGST, or IGST splits based on the place of supply. US and global users get sales tax and VAT handling instead.",
-  },
-  {
-    q: "Which payment gateways are supported?",
-    a: "Razorpay and UPI for India, and Stripe and PayPal for the US and the rest of the world. Every invoice carries a pay-now link, so a client can settle it in two clicks without creating an account.",
-  },
-  {
-    q: "Can I import invoices from Zoho, Tally, or Excel?",
-    a: "Yes. Tagada imports existing invoices and clients from a CSV or Excel export, including files exported from Zoho Invoice, Wave, and FreshBooks. Outstanding invoices carry their due dates over, so the chase engine can pick them up immediately.",
-  },
-  {
-    q: "Does it work outside India?",
-    a: "Yes. Tagada supports multi-currency invoicing with Stripe and PayPal, sales tax and VAT handling, and email and SMS reminders for clients anywhere in the world. India and global markets are both supported from day one, not as an afterthought.",
-  },
-  {
-    q: "What happens to my data if I leave?",
-    a: "Your data is yours. You can export every invoice, client, and payment record to CSV and PDF at any time, including on the free plan. If you delete your account, records are permanently removed after a 30-day grace period.",
-  },
+  { q: "Will reminders annoy my clients?", a: "Tone and frequency are yours to set, and chasing stops the second an invoice is paid." },
+  { q: "Which channels does it use?", a: "Email, WhatsApp and SMS. Pick any combination per client." },
+  { q: "How do clients pay?", a: "A pay link on every reminder — UPI and Razorpay in India, Stripe and PayPal globally." },
+  { q: "Does it handle GST?", a: "Yes. GST for India, sales tax and VAT-style rates elsewhere." },
+  { q: "What does it cost during beta?", a: "Free while we're in private beta. No card required." },
 ];
 
 export function Faq() {
   return (
-    <section id="faq" aria-labelledby="faq-heading" className="border-y border-border bg-band py-20 scroll-mt-20 sm:py-28">
-      <div className="container-page grid gap-10 lg:grid-cols-[minmax(0,22rem)_1fr] lg:gap-16">
-        <Reveal>
-          <h2 id="faq-heading" className="text-3xl font-semibold sm:text-5xl">
-            Questions, answered.
-          </h2>
-        </Reveal>
-        <Reveal delay={80}>
-          <Accordion type="single" collapsible className="w-full">
-            {faqs.map((f, i) => (
-              <AccordionItem key={f.q} value={`item-${i}`}>
-                <AccordionTrigger className="text-left text-base font-semibold">
-                  {f.q}
-                </AccordionTrigger>
-                <AccordionContent className="text-base leading-relaxed text-muted-foreground">
-                  {f.a}
-                </AccordionContent>
-              </AccordionItem>
-            ))}
-          </Accordion>
-        </Reveal>
+    <section id="faq" aria-labelledby="faq-heading" className="scroll-mt-20 border-b border-border py-24 sm:py-32">
+      <div className="container-page grid gap-10 lg:grid-cols-[0.7fr_1.3fr] lg:gap-20">
+        <h2 id="faq-heading" className="text-3xl font-semibold tracking-[-0.03em] sm:text-4xl">
+          Questions
+        </h2>
+        <Accordion type="single" collapsible className="w-full">
+          {faqs.map((f) => (
+            <AccordionItem key={f.q} value={f.q} className="border-border">
+              <AccordionTrigger className="text-left text-base tracking-tight hover:no-underline">
+                {f.q}
+              </AccordionTrigger>
+              <AccordionContent className="text-sm text-muted-foreground">{f.a}</AccordionContent>
+            </AccordionItem>
+          ))}
+        </Accordion>
       </div>
     </section>
   );
