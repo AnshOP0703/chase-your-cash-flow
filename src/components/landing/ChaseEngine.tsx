@@ -1,94 +1,75 @@
 import { useState } from "react";
-import { Reveal } from "./Reveal";
 import { cn } from "@/lib/utils";
-import { CtaLink } from "./Cta";
 
 const tones = {
   Gentle: {
-    subject: "Invoice #0042 — whenever you get a moment",
-    body: "Hi Priya, hope the launch went well. Invoice #0042 for ₹48,000 was due last Friday — no rush if it's already in the queue. Here's a pay link if it's easier: tagada.pay/0042. Thanks!",
+    channel: "WhatsApp · Day 7",
+    msg: "Hi Priya, just a quick reminder that invoice #0042 is due.",
   },
   Standard: {
-    subject: "Invoice #0042 is 12 days overdue",
-    body: "Hi Priya, invoice #0042 for ₹48,000 was due on 14 March and is now 12 days overdue. You can settle it in two clicks here: tagada.pay/0042. If something's blocking approval on your side, tell me and I'll sort it.",
+    channel: "WhatsApp · Day 14",
+    msg: "Hi Priya, invoice #0042 is now overdue. You can pay here.",
   },
   Firm: {
-    subject: "Action needed: invoice #0042, 12 days overdue",
-    body: "Hi Priya, invoice #0042 for ₹48,000 remains unpaid 12 days past its due date. Per our agreed terms, late fees apply from day 15 and new work pauses until the balance clears. Payment link: tagada.pay/0042. Please confirm a payment date today.",
+    channel: "WhatsApp · Day 21",
+    msg: "Invoice #0042 is 14 days overdue. Please arrange payment today.",
   },
 } as const;
 
 type Tone = keyof typeof tones;
-const order: Tone[] = ["Gentle", "Standard", "Firm"];
+const keys = Object.keys(tones) as Tone[];
 
 export function ChaseEngine() {
-  const [tone, setTone] = useState<Tone>("Standard");
+  const [tone, setTone] = useState<Tone>("Gentle");
+  const active = tones[tone];
 
   return (
-    <section aria-labelledby="chase-heading" className="border-y border-border bg-ink py-20 text-ink-foreground sm:py-28">
-      <div className="container-page grid gap-12 lg:grid-cols-2 lg:gap-16">
-        <Reveal className="max-w-xl">
-          <p className="text-sm font-medium text-ink-foreground/60">The chase engine</p>
-          <h2 id="chase-heading" className="mt-4 text-4xl font-semibold sm:text-6xl">
-            Politeness that escalates.
+    <section id="product" aria-labelledby="chase-heading" className="scroll-mt-20 border-b border-border py-24 sm:py-32">
+      <div className="container-page grid gap-14 lg:grid-cols-2 lg:items-center lg:gap-20">
+        <div>
+          <h2 id="chase-heading" className="text-3xl font-semibold tracking-[-0.03em] sm:text-5xl">
+            Friendly first.
+            <span className="block text-muted-foreground">Firmer when needed.</span>
           </h2>
-          <p className="mt-6 text-lg leading-relaxed text-ink-foreground/70">
-            Set the cadence once. Tagada starts friendly and gets firmer on a schedule you
-            control — and stops the instant the invoice is paid. No awkward emails from you. No
-            relationship damage.
-          </p>
-        </Reveal>
-
-        <Reveal delay={120}>
-          <div
-            role="tablist"
-            aria-label="Reminder tone"
-            className="inline-flex rounded-lg border border-ink-foreground/15 p-1"
-          >
-            {order.map((t) => (
+          <div role="tablist" aria-label="Reminder tone" className="mt-9 inline-flex rounded-md border border-border p-1">
+            {keys.map((k) => (
               <button
-                key={t}
+                key={k}
                 role="tab"
-                id={`tone-tab-${t}`}
-                aria-selected={tone === t}
-                aria-controls="tone-panel"
-                tabIndex={tone === t ? 0 : -1}
-                onClick={() => setTone(t)}
-                onKeyDown={(e) => {
-                  if (e.key !== "ArrowRight" && e.key !== "ArrowLeft") return;
-                  e.preventDefault();
-                  const i = order.indexOf(tone);
-                  const next: Tone =
-                    e.key === "ArrowRight"
-                      ? order[(i + 1) % order.length]!
-                      : order[(i - 1 + order.length) % order.length]!;
-                  setTone(next);
-                  document.getElementById(`tone-tab-${next}`)?.focus();
-                }}
+                aria-selected={tone === k}
+                onClick={() => setTone(k)}
                 className={cn(
-                  "rounded-md px-4 py-2 text-sm font-semibold transition-colors focus-visible:ring-2 focus-visible:ring-ink-foreground/40 focus-visible:outline-none",
-                  tone === t
-                    ? "bg-ink-foreground text-ink"
-                    : "text-ink-foreground/70 hover:text-ink-foreground",
+                  "rounded px-4 py-2 text-sm font-medium tracking-tight transition-colors focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none",
+                  tone === k ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground",
                 )}
               >
-                {t}
+                {k}
               </button>
             ))}
           </div>
+        </div>
 
-          <div
-            id="tone-panel"
-            role="tabpanel"
-            aria-labelledby={`tone-tab-${tone}`}
-            className="mt-5 rounded-lg border border-ink-foreground/15 bg-ink-foreground/[0.04] p-6"
-          >
-            <p className="text-xs tracking-wide text-ink-foreground/50 uppercase">Preview</p>
-            <p className="mt-3 font-semibold">{tones[tone].subject}</p>
-            <p className="mt-3 leading-relaxed text-ink-foreground/75">{tones[tone].body}</p>
+        <div className="rounded-xl border border-border bg-surface p-5 sm:p-7">
+          <div className="flex items-center gap-3 border-b border-border pb-4">
+            <span className="flex size-9 items-center justify-center rounded-full bg-surface-2 text-xs font-semibold">
+              P
+            </span>
+            <div>
+              <p className="text-sm font-medium tracking-tight">Priya · Northline Creative</p>
+              <p className="text-xs text-muted-foreground">{active.channel}</p>
+            </div>
           </div>
-          <CtaLink className="mt-8" label="Start chasing automatically" />
-        </Reveal>
+          <div key={tone} className="mt-6" style={{ animation: "row-in 0.35s cubic-bezier(0.16,1,0.3,1) both" }}>
+            <p className="max-w-sm rounded-lg rounded-bl-sm bg-surface-2 px-4 py-3 text-sm leading-relaxed">
+              {active.msg}
+            </p>
+            <div className="mt-3 max-w-sm rounded-lg border border-border px-4 py-3">
+              <p className="text-xs text-muted-foreground">Invoice #0042 · ₹48,000</p>
+              <p className="mt-1 text-sm font-medium text-primary">Pay now →</p>
+            </div>
+            <p className="mt-3 text-xs text-muted-foreground">Delivered · 09:14</p>
+          </div>
+        </div>
       </div>
     </section>
   );
