@@ -22,7 +22,7 @@ export function MobileCtaBar() {
   return (
     <div className="fixed inset-x-0 bottom-0 z-50 flex items-center gap-2 border-t border-border bg-background/95 p-3 backdrop-blur sm:hidden">
       <a
-        href="#waitlist"
+        href="#early-access"
         className="flex-1 rounded-lg bg-primary px-6 py-3.5 text-center text-base font-semibold text-primary-foreground focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
       >
         Get early access

@@ -1,21 +1,15 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { Nav } from "@/components/landing/Nav";
 import { Hero } from "@/components/landing/Hero";
-import { ProblemStrip } from "@/components/landing/ProblemStrip";
+import { Problem } from "@/components/landing/Problem";
 import { HowItWorks } from "@/components/landing/HowItWorks";
 import { ChaseEngine } from "@/components/landing/ChaseEngine";
-import { Features } from "@/components/landing/Features";
+import { Dashboard } from "@/components/landing/Dashboard";
 import { Markets } from "@/components/landing/Markets";
-import { Comparison } from "@/components/landing/Comparison";
 import { Testimonials } from "@/components/landing/Testimonials";
 import { Pricing } from "@/components/landing/Pricing";
-import { WhoItsFor } from "@/components/landing/WhoItsFor";
+import { Audience } from "@/components/landing/Audience";
 import { ClientScores } from "@/components/landing/ClientScores";
-import { Recurring } from "@/components/landing/Recurring";
-import { Calculator } from "@/components/landing/Calculator";
-import { Integrations } from "@/components/landing/Integrations";
-import { Security } from "@/components/landing/Security";
-import { FounderNote } from "@/components/landing/FounderNote";
 import { MobileCtaBar } from "@/components/landing/MobileCtaBar";
 import { Faq, faqs } from "@/components/landing/Faq";
 import { FinalCta } from "@/components/landing/FinalCta";
@@ -29,7 +23,7 @@ export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
       { title: TITLE },
-      { name: "theme-color", content: "#0B0B0C" },
+      { name: "theme-color", content: "#080808" },
       { name: "description", content: DESCRIPTION },
       { property: "og:title", content: TITLE },
       { property: "og:description", content: DESCRIPTION },
@@ -91,19 +85,13 @@ function Landing() {
       <Nav />
       <main>
         <Hero />
-        <ProblemStrip />
-        <WhoItsFor />
+        <Problem />
         <HowItWorks />
         <ChaseEngine />
+        <Dashboard />
         <ClientScores />
-        <Recurring />
-        <Features />
-        <Calculator />
+        <Audience />
         <Markets />
-        <Integrations />
-        <Comparison />
-        <Security />
-        <FounderNote />
         <Testimonials />
         <Pricing />
         <Faq />
