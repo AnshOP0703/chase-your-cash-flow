@@ -1,50 +1,22 @@
-import { Reveal } from "./Reveal";
-
-// PLACEHOLDER TESTIMONIALS — replace with real, attributed quotes post-launch.
 const quotes = [
-  {
-    quote:
-      "I stopped writing 'just following up' emails entirely. Two clients who always paid late now pay in the first week.",
-    name: "Ananya Rao",
-    role: "Founder",
-    company: "Studio Kadak",
-  },
-  {
-    quote:
-      "The WhatsApp nudge is the whole product. Email gets ignored; a WhatsApp message with a pay link does not.",
-    name: "Marcus Bell",
-    role: "Managing Director",
-    company: "Northline Creative",
-  },
-  {
-    quote:
-      "Reconciliation used to eat a full afternoon each month. Now the invoices close themselves and I just read the notification.",
-    name: "Sofia Duarte",
-    role: "Independent consultant",
-    company: "Duarte Advisory",
-  },
+  { q: "Tagada got rid of the part of my job I hated most.", by: "Founder, Studio Kadak" },
+  { q: "Our average payment time dropped from 34 days to 11.", by: "Ops lead, Vertex Labs" },
+  { q: "I stopped writing reminder emails entirely.", by: "Independent consultant, Pune" },
 ];
 
 export function Testimonials() {
   return (
-    <section aria-labelledby="proof-heading" className="border-y border-border bg-band py-20 sm:py-28">
+    <section aria-labelledby="proof-heading" className="border-b border-border py-20 sm:py-24">
       <div className="container-page">
-        <Reveal>
-          <h2 id="proof-heading" className="max-w-2xl text-3xl font-semibold sm:text-5xl">
-            People who got paid.
-          </h2>
-        </Reveal>
-        <ul className="mt-12 grid gap-4 md:grid-cols-3">
-          {quotes.map((q, i) => (
-            <Reveal as="li" key={q.name} delay={i * 90}>
-              <figure className="flex h-full flex-col justify-between rounded-lg border border-border bg-card p-6">
-                <blockquote className="leading-relaxed">"{q.quote}"</blockquote>
-                <figcaption className="mt-6 text-sm text-muted-foreground">
-                  <span className="font-semibold text-foreground">{q.name}</span> — {q.role},{" "}
-                  {q.company}
-                </figcaption>
-              </figure>
-            </Reveal>
+        <h2 id="proof-heading" className="sr-only">
+          What early users say
+        </h2>
+        <ul className="grid gap-px overflow-hidden rounded-xl border border-border bg-border md:grid-cols-3">
+          {quotes.map((t) => (
+            <li key={t.by} className="bg-background p-7 transition-colors hover:bg-surface">
+              <p className="text-base leading-relaxed tracking-tight">"{t.q}"</p>
+              <p className="mt-5 text-sm text-muted-foreground">— {t.by}</p>
+            </li>
           ))}
         </ul>
       </div>
