@@ -75,9 +75,11 @@ export function Channels() {
                     hover === i ? "mt-4 grid-rows-[1fr] opacity-100" : "mt-0 grid-rows-[0fr] opacity-0",
                   )}
                 >
-                  <p className="overflow-hidden rounded-lg bg-surface-2 px-3 text-xs leading-relaxed text-muted-foreground [.grid-rows-\[1fr\]_&]:py-3">
-                    {c.preview}
-                  </p>
+                  <div className="overflow-hidden">
+                    <p className="rounded-lg bg-surface-2 px-3 py-3 text-xs leading-relaxed text-muted-foreground">
+                      {c.preview}
+                    </p>
+                  </div>
                 </div>
               </div>
             ))}

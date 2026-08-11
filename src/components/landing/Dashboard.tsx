@@ -1,101 +1,125 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { cn } from "@/lib/utils";
 import { useInView, useCountUp } from "./usePointer";
 
-const clients = [
-  { name: "Northline Creative", days: 3, amount: "₹48,000", state: "Sent" },
-  { name: "Vertex Labs", days: 9, amount: "₹1,20,000", state: "Reminder" },
-  { name: "Patel & Sons", days: 24, amount: "₹86,500", state: "WhatsApp" },
-  { name: "Mira Interiors", days: 41, amount: "₹2,12,167", state: "Overdue" },
+const rows = [
+  { name: "Northline Creative", due: "14 Mar", amount: "₹48,000", state: "Paid" },
+  { name: "Vertex Labs", due: "02 Mar", amount: "₹1,20,000", state: "Reminder sent" },
+  { name: "Patel & Sons", due: "18 Feb", amount: "₹86,500", state: "WhatsApp sent" },
+  { name: "Mira Interiors", due: "31 Jan", amount: "₹2,12,167", state: "Overdue" },
 ];
+
+const bars = [38, 52, 44, 66, 58, 79, 92];
 
 export function Dashboard() {
   const { ref, inView } = useInView<HTMLElement>(0.2);
   const outstanding = useCountUp(466667, inView);
-  const [row, setRow] = useState<number | null>(null);
+  const received = useCountUp(48000, inView);
+  const [flip, setFlip] = useState(false);
+  const [toast, setToast] = useState(false);
+
+  useEffect(() => {
+    if (!inView) return;
+    const a = setTimeout(() => setFlip(true), 2400);
+    const b = setTimeout(() => setToast(true), 2600);
+    const c = setTimeout(() => setToast(false), 7200);
+    return () => {
+      clearTimeout(a);
+      clearTimeout(b);
+      clearTimeout(c);
+    };
+  }, [inView]);
 
   return (
-    <section ref={ref} aria-labelledby="dash-heading" className="border-b border-border py-24 sm:py-32">
+    <section ref={ref} aria-labelledby="dash-heading" className="border-t border-border py-24 sm:py-36">
       <div className="container-page">
-        <h2 id="dash-heading" className="max-w-xl text-3xl font-semibold tracking-[-0.03em] sm:text-5xl">
-          Everything after the invoice. Handled.
+        <h2 id="dash-heading" className="max-w-xl text-3xl leading-[1.05] font-semibold tracking-[-0.035em] sm:text-5xl">
+          Everything after the invoice.
+          <span className="block text-muted-foreground">Handled.</span>
         </h2>
 
-        <div className="mt-14 overflow-hidden rounded-xl border border-border bg-surface">
+        <div className="relative mt-14 overflow-hidden rounded-2xl border border-border bg-surface card-lift">
           <div className="grid gap-px bg-border sm:grid-cols-3">
             <div className="bg-surface p-6">
-              <p className="text-xs tracking-[0.12em] text-muted-foreground uppercase">Outstanding</p>
-              <p className="mt-3 text-3xl font-semibold tracking-tight tabular-nums">
-                ₹{outstanding.toLocaleString("en-IN")}
-              </p>
+              <p className="eyebrow">Outstanding</p>
+              <p className="num mt-3 text-3xl font-semibold">₹{outstanding.toLocaleString("en-IN")}</p>
               <p className="mt-2 text-sm text-muted-foreground">12 invoices · 3 overdue</p>
             </div>
             <div className="bg-surface p-6">
-              <p className="text-xs tracking-[0.12em] text-muted-foreground uppercase">Upcoming</p>
-              <p className="mt-3 text-3xl font-semibold tracking-tight tabular-nums">₹1,84,000</p>
-              <p className="mt-2 text-sm text-muted-foreground">Due in the next 14 days</p>
+              <p className="eyebrow">Received today</p>
+              <p className="num mt-3 text-3xl font-semibold text-primary">₹{received.toLocaleString("en-IN")}</p>
+              <p className="mt-2 text-sm text-muted-foreground">Northline Creative · UPI</p>
             </div>
             <div className="bg-surface p-6">
-              <p className="text-xs tracking-[0.12em] text-muted-foreground uppercase">Collected · March</p>
-              <p className="mt-3 text-3xl font-semibold tracking-tight text-success tabular-nums">₹7,40,000</p>
-              <p className="mt-2 text-sm text-muted-foreground">28 invoices paid</p>
+              <p className="eyebrow">Collection rate</p>
+              <div className="mt-4 flex h-9 items-end gap-1.5">
+                {bars.map((h, i) => (
+                  <span
+                    key={i}
+                    className={cn("w-full rounded-sm transition-all duration-700 ease-[cubic-bezier(0.16,1,0.3,1)]", i === bars.length - 1 ? "bg-primary" : "bg-secondary")}
+                    style={{ height: inView ? `${h}%` : "4%", transitionDelay: `${i * 70}ms` }}
+                  />
+                ))}
+              </div>
+              <p className="mt-3 text-sm text-muted-foreground">92% within 30 days</p>
             </div>
           </div>
 
-          <div className="grid gap-px border-t border-border bg-border lg:grid-cols-[1.6fr_1fr]">
-            <div className="bg-surface p-6">
-              <p className="text-xs tracking-[0.12em] text-muted-foreground uppercase">Open invoices</p>
-              <table className="mt-4 w-full text-sm">
-                <thead className="text-xs text-muted-foreground">
-                  <tr className="text-left">
-                    <th scope="col" className="pb-2 font-medium">Client</th>
-                    <th scope="col" className="pb-2 font-medium">Overdue</th>
-                    <th scope="col" className="pb-2 text-right font-medium">Amount</th>
-                    <th scope="col" className="pb-2 text-right font-medium">Stage</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {clients.map((c, i) => (
+          <div className="border-t border-border p-6">
+            <p className="eyebrow">Open invoices</p>
+            <table className="mt-4 w-full text-sm">
+              <thead>
+                <tr className="text-left text-xs text-muted-foreground">
+                  <th scope="col" className="pb-3 font-normal">Client</th>
+                  <th scope="col" className="pb-3 font-normal">Due</th>
+                  <th scope="col" className="pb-3 text-right font-normal">Amount</th>
+                  <th scope="col" className="pb-3 text-right font-normal">Status</th>
+                </tr>
+              </thead>
+              <tbody>
+                {rows.map((r, i) => {
+                  const paid = r.state === "Paid" || (flip && r.name === "Patel & Sons");
+                  return (
                     <tr
-                      key={c.name}
-                      onMouseEnter={() => setRow(i)}
-                      onMouseLeave={() => setRow(null)}
-                      style={{ animation: inView ? `row-in 0.5s ease-out ${i * 110}ms both` : undefined }}
-                      className={cn(
-                        "border-t border-border transition-colors",
-                        row === i ? "bg-surface-2" : "bg-transparent",
-                      )}
+                      key={r.name}
+                      className="border-t border-border transition-colors hover:bg-surface-2"
+                      style={{ animation: inView ? `row-in 0.6s cubic-bezier(0.16,1,0.3,1) ${i * 110}ms both` : undefined }}
                     >
-                      <td className="py-3 font-medium tracking-tight">{c.name}</td>
-                      <td className="py-3 text-muted-foreground tabular-nums">{c.days} days</td>
-                      <td className="py-3 text-right tabular-nums">{c.amount}</td>
-                      <td className={cn("py-3 text-right", c.state === "Overdue" ? "text-primary" : "text-muted-foreground")}>
-                        {c.state}
+                      <td className="py-3.5 font-medium tracking-tight">{r.name}</td>
+                      <td className="num py-3.5 text-muted-foreground">{r.due}</td>
+                      <td className="num py-3.5 text-right">{r.amount}</td>
+                      <td className="py-3.5 text-right">
+                        <span
+                          className={cn(
+                            "inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs transition-all duration-700",
+                            paid ? "bg-soft text-deep" : "text-muted-foreground",
+                          )}
+                        >
+                          {paid && (
+                            <svg viewBox="0 0 24 24" className="draw-check size-3" fill="none" aria-hidden="true">
+                              <path d="M5 12.5 10 17.5 19 7" stroke="currentColor" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round" />
+                            </svg>
+                          )}
+                          {paid ? "Paid" : r.state}
+                        </span>
                       </td>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-
-            <div className="bg-surface p-6">
-              <p className="text-xs tracking-[0.12em] text-muted-foreground uppercase">Recent activity</p>
-              <ul className="mt-4 space-y-4 text-sm">
-                {[
-                  { t: "Reminder sent to Vertex Labs", m: "2h ago" },
-                  { t: "WhatsApp follow-up · Patel & Sons", m: "6h ago" },
-                  { t: "₹48,000 received · Northline", m: "Yesterday", ok: true },
-                  { t: "Invoice #0051 sent", m: "2 days ago" },
-                ].map((a) => (
-                  <li key={a.t} className="flex items-start gap-3">
-                    <span className={cn("mt-1.5 size-1.5 shrink-0 rounded-full", a.ok ? "bg-success" : "bg-muted-foreground")} />
-                    <span className="flex-1 tracking-tight">{a.t}</span>
-                    <span className="text-xs text-muted-foreground">{a.m}</span>
-                  </li>
-                ))}
-              </ul>
-            </div>
+                  );
+                })}
+              </tbody>
+            </table>
           </div>
+
+          {toast && (
+            <div
+              className="absolute right-5 bottom-5 flex items-center gap-3 rounded-xl border border-border bg-surface px-4 py-3 text-sm card-lift"
+              style={{ animation: "slide-in-up 0.5s cubic-bezier(0.16,1,0.3,1) both" }}
+            >
+              <span className="size-1.5 rounded-full bg-primary" />
+              <span className="num">₹86,500</span>
+              <span className="text-muted-foreground">received · Patel &amp; Sons</span>
+            </div>
+          )}
         </div>
       </div>
     </section>

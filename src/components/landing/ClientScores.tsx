@@ -1,53 +1,69 @@
+import { useState } from "react";
 import { cn } from "@/lib/utils";
 import { useInView } from "./usePointer";
 
-const rows = [
-  { name: "Northline Creative", avg: "3 days", score: "On time", tone: "good" },
-  { name: "Vertex Labs", avg: "9 days", score: "On time", tone: "good" },
-  { name: "Patel & Sons", avg: "24 days", score: "Slow", tone: "warn" },
-  { name: "Mira Interiors", avg: "41 days", score: "Risky", tone: "bad" },
-] as const;
+const clients = [
+  { name: "Northline Creative", days: 3, score: "On time", detail: ["3 day average", "Rarely needs a reminder", "Low payment risk"] },
+  { name: "Vertex Labs", days: 9, score: "On time", detail: ["9 day average", "Usually needs 1 reminder", "Low payment risk"] },
+  { name: "Patel & Sons", days: 24, score: "Slow", detail: ["24 day average", "Usually needs 2 reminders", "Medium payment risk"] },
+  { name: "Mira Interiors", days: 41, score: "Risky", detail: ["41 day average", "Usually needs 3 reminders", "High payment risk"] },
+];
 
 export function ClientScores() {
   const { ref, inView } = useInView<HTMLElement>(0.25);
+  const [open, setOpen] = useState<number | null>(null);
 
   return (
-    <section ref={ref} aria-labelledby="scores-heading" className="border-b border-border py-24 sm:py-32">
-      <div className="container-page grid gap-12 lg:grid-cols-[0.85fr_1.15fr] lg:items-center lg:gap-20">
+    <section ref={ref} aria-labelledby="scores-heading" className="border-t border-border py-24 sm:py-36">
+      <div className="container-page grid gap-12 lg:grid-cols-[0.8fr_1.2fr] lg:gap-20">
         <div>
-          <h2 id="scores-heading" className="text-3xl font-semibold tracking-[-0.03em] sm:text-5xl">
-            Know who pays late.
+          <h2 id="scores-heading" className="text-3xl leading-[1.05] font-semibold tracking-[-0.035em] sm:text-5xl">
+            Know who
+            <span className="block text-muted-foreground">pays late.</span>
           </h2>
-          <p className="mt-5 text-lg text-muted-foreground">Tagada learns how your clients pay.</p>
+          <p className="mt-6 max-w-xs text-muted-foreground">Tagada learns how your clients pay.</p>
         </div>
 
-        <div className="overflow-hidden rounded-xl border border-border bg-surface">
-          <div className="grid grid-cols-[1.4fr_1fr_auto] gap-4 border-b border-border px-6 py-3 text-xs tracking-[0.12em] text-muted-foreground uppercase">
+        <div className="relative">
+          <div className="grid grid-cols-[1fr_auto_auto] gap-x-6 border-b border-border pb-3 text-xs text-muted-foreground">
             <span>Client</span>
-            <span>Avg. payment time</span>
-            <span>Score</span>
+            <span className="text-right">Avg. days</span>
+            <span className="w-20 text-right">Score</span>
           </div>
-          {rows.map((r, i) => (
+          {clients.map((c, i) => (
             <div
-              key={r.name}
-              style={{ animation: inView ? `row-in 0.55s cubic-bezier(0.16,1,0.3,1) ${i * 130}ms both` : undefined }}
+              key={c.name}
+              onMouseEnter={() => setOpen(i)}
+              onMouseLeave={() => setOpen(null)}
               className={cn(
-                "grid grid-cols-[1.4fr_1fr_auto] items-center gap-4 border-b border-border px-6 py-4 text-sm transition-colors last:border-0 hover:bg-surface-2",
-                inView ? "" : "opacity-0",
+                "relative grid cursor-default grid-cols-[1fr_auto_auto] items-center gap-x-6 border-b border-border py-4 transition-colors duration-300",
+                open === i ? "bg-surface-2" : "",
               )}
+              style={{ animation: inView ? `row-in 0.6s cubic-bezier(0.16,1,0.3,1) ${i * 110}ms both` : undefined }}
             >
-              <span className="font-medium tracking-tight">{r.name}</span>
-              <span className="text-muted-foreground tabular-nums">{r.avg}</span>
+              <span className="text-sm font-medium tracking-tight">{c.name}</span>
+              <span className="num text-right text-sm text-muted-foreground">{c.days}</span>
               <span
                 className={cn(
-                  "justify-self-end rounded px-2 py-0.5 text-xs font-medium",
-                  r.tone === "good" && "text-success",
-                  r.tone === "warn" && "text-muted-foreground",
-                  r.tone === "bad" && "bg-primary text-primary-foreground",
+                  "w-20 text-right text-xs",
+                  c.score === "On time" ? "text-deep" : c.score === "Slow" ? "text-foreground" : "text-muted-foreground",
                 )}
               >
-                {r.score}
+                {c.score}
               </span>
+
+              {open === i && (
+                <div
+                  className="absolute top-1/2 right-0 z-10 hidden w-56 -translate-y-1/2 translate-x-[calc(100%+16px)] rounded-xl border border-border bg-surface p-4 card-lift xl:block"
+                  style={{ animation: "slide-in-up 0.35s cubic-bezier(0.16,1,0.3,1) both" }}
+                >
+                  <ul className="space-y-2 text-xs text-muted-foreground">
+                    {c.detail.map((d) => (
+                      <li key={d}>{d}</li>
+                    ))}
+                  </ul>
+                </div>
+              )}
             </div>
           ))}
         </div>
