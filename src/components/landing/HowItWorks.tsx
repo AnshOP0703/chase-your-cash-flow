@@ -1,120 +1,134 @@
 import { useState } from "react";
 import { cn } from "@/lib/utils";
+import { useInView } from "./usePointer";
 
-function SendUI({ live }: { live: boolean }) {
-  return (
-    <div className="space-y-2 text-xs">
-      {["Design retainer — March", "Line item · ₹40,000", "GST 18% · ₹8,000"].map((r, i) => (
+const stages = [
+  {
+    n: "01",
+    title: "Send",
+    copy: "Create your invoice.",
+    render: (on: boolean) => (
+      <div className="space-y-2.5">
+        {["Client", "Amount", "Due date"].map((f, i) => (
+          <div
+            key={f}
+            className="flex items-center justify-between rounded-lg border border-border bg-surface px-3 py-2.5 text-xs transition-all duration-500"
+            style={{ transitionDelay: `${i * 90}ms`, opacity: on ? 1 : 0.45, transform: on ? "none" : "translateY(6px)" }}
+          >
+            <span className="text-muted-foreground">{f}</span>
+            <span className={cn("num font-medium", i === 1 && "text-foreground")}>
+              {["Northline Creative", "₹48,000", "14 March"][i]}
+            </span>
+          </div>
+        ))}
         <div
-          key={r}
           className={cn(
-            "flex items-center justify-between rounded border border-border bg-surface-2 px-3 py-2 transition-all duration-300",
-            live && "translate-x-0",
+            "mt-3 rounded-lg bg-foreground px-3 py-2.5 text-center text-xs font-medium text-background transition-all duration-500",
+            on ? "opacity-100" : "translate-y-1 opacity-40",
           )}
-          style={{ transitionDelay: `${i * 60}ms`, opacity: live ? 1 : 0.55 }}
         >
-          <span className="text-muted-foreground">{r}</span>
+          Send invoice
         </div>
-      ))}
-      <div className="flex items-center justify-between pt-1">
-        <span className="text-muted-foreground">Total</span>
-        <span className="font-semibold tabular-nums">₹48,000</span>
       </div>
-      <div
-        className={cn(
-          "mt-2 rounded bg-primary py-2 text-center text-xs font-semibold text-primary-foreground transition-transform duration-300",
-          live && "-translate-y-0.5",
-        )}
-      >
-        Send invoice
+    ),
+  },
+  {
+    n: "02",
+    title: "Chase",
+    copy: "Tagada follows up automatically.",
+    render: (on: boolean) => (
+      <div className="space-y-2.5">
+        {[
+          { c: "Email", t: "Day 7" },
+          { c: "WhatsApp", t: "Day 14" },
+          { c: "SMS", t: "Day 21" },
+        ].map((m, i) => (
+          <div
+            key={m.c}
+            className="flex items-center gap-3 rounded-lg border border-border bg-surface px-3 py-3 text-xs transition-all duration-700"
+            style={{
+              transitionDelay: `${i * 220}ms`,
+              opacity: on ? 1 : 0.3,
+              transform: on ? "none" : "translateX(-8px)",
+            }}
+          >
+            <span className="size-1.5 rounded-full bg-primary" />
+            <span className="flex-1 font-medium">{m.c} reminder</span>
+            <span className="num text-muted-foreground">{m.t}</span>
+          </div>
+        ))}
+        <p className="pt-1 text-[0.7rem] text-muted-foreground">Tone and cadence are yours to set.</p>
       </div>
-    </div>
-  );
-}
-
-function ChaseUI({ live }: { live: boolean }) {
-  const rows = [
-    { d: "Day 7", t: "Gentle reminder" },
-    { d: "Day 14", t: "WhatsApp nudge" },
-    { d: "Day 21", t: "Firm follow-up" },
-  ];
-  return (
-    <div className="space-y-3 text-xs">
-      {rows.map((r, i) => (
-        <div key={r.d} className="flex items-center gap-3">
-          <span className="w-12 shrink-0 text-muted-foreground tabular-nums">{r.d}</span>
-          <span className="relative h-px flex-1 bg-border">
-            <span
-              className="absolute inset-y-0 left-0 bg-primary transition-[width] duration-700 ease-out"
-              style={{ width: live ? "100%" : "0%", transitionDelay: `${i * 140}ms` }}
-            />
+    ),
+  },
+  {
+    n: "03",
+    title: "Get paid",
+    copy: "The moment payment arrives, everything stops.",
+    render: (on: boolean) => (
+      <div className="rounded-xl border border-border bg-surface p-5">
+        <p className="eyebrow">Invoice #0042</p>
+        <p className={cn("num mt-3 text-3xl font-semibold transition-colors duration-700", on ? "text-primary" : "text-foreground")}>
+          ₹48,000
+        </p>
+        <div className="mt-4 flex items-center gap-2 text-xs">
+          <span className="grid size-5 place-items-center rounded-full bg-soft text-deep">
+            {on && (
+              <svg viewBox="0 0 24 24" className="draw-check size-3" fill="none" aria-hidden="true">
+                <path d="M5 12.5 10 17.5 19 7" stroke="currentColor" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
+            )}
           </span>
-          <span className="w-28 shrink-0 text-right text-muted-foreground">{r.t}</span>
+          <span className={cn("transition-opacity duration-500", on ? "opacity-100" : "opacity-30")}>
+            Paid · Reminders stopped
+          </span>
         </div>
-      ))}
-      <p className="pt-2 text-muted-foreground">Auto-stops the moment it's paid.</p>
-    </div>
-  );
-}
-
-function PaidUI({ live }: { live: boolean }) {
-  return (
-    <div className="text-xs">
-      <div
-        className={cn(
-          "rounded border border-border bg-surface-2 p-4 transition-all duration-500",
-          live ? "translate-y-0 opacity-100" : "translate-y-1 opacity-70",
-        )}
-      >
-        <p className="text-muted-foreground">Payment received</p>
-        <p className="mt-2 text-2xl font-semibold tracking-tight tabular-nums">₹48,000</p>
-        <p className="mt-1 text-muted-foreground">Northline Creative · Invoice #0042</p>
-        <span className="mt-3 inline-block rounded bg-success px-2 py-0.5 text-[0.7rem] font-semibold text-success-foreground">
-          PAID
-        </span>
       </div>
-      <p className="mt-3 text-muted-foreground">Reconciled automatically. Chasing stops.</p>
-    </div>
-  );
-}
-
-const steps = [
-  { n: "01", title: "Send", line: "Create and send an invoice.", UI: SendUI },
-  { n: "02", title: "Chase", line: "Tagada follows up automatically.", UI: ChaseUI },
-  { n: "03", title: "Get paid", line: "Payment lands. Chasing stops.", UI: PaidUI },
+    ),
+  },
 ];
 
 export function HowItWorks() {
+  const { ref, inView } = useInView<HTMLElement>(0.25);
   const [hover, setHover] = useState<number | null>(null);
 
   return (
-    <section id="how-it-works" aria-labelledby="how-heading" className="scroll-mt-20 border-b border-border py-24 sm:py-32">
+    <section
+      ref={ref}
+      id="how-it-works"
+      aria-labelledby="how-heading"
+      className="scroll-mt-20 border-t border-border py-24 sm:py-36"
+    >
       <div className="container-page">
-        <h2 id="how-heading" className="text-3xl font-semibold tracking-[-0.03em] sm:text-5xl">
-          Three steps. Then you're done.
+        <h2 id="how-heading" className="max-w-xl text-3xl leading-[1.05] font-semibold tracking-[-0.035em] sm:text-5xl">
+          Three steps.
+          <span className="block text-muted-foreground">Then you&rsquo;re done.</span>
         </h2>
-        <ol className="mt-14 grid gap-px overflow-hidden rounded-xl border border-border bg-border md:grid-cols-3">
-          {steps.map((s, i) => (
-            <li
-              key={s.n}
-              onMouseEnter={() => setHover(i)}
-              onMouseLeave={() => setHover(null)}
-              className={cn(
-                "group flex flex-col bg-background p-7 transition-colors duration-300",
-                hover === i && "bg-surface",
-              )}
-            >
-              <div className="flex items-baseline gap-3">
-                <span className="font-mono text-xs text-muted-foreground">{s.n}</span>
-                <h3 className="text-xl font-semibold tracking-tight">{s.title}</h3>
+
+        <div className="mt-16 grid gap-5 md:grid-cols-3">
+          {stages.map((s, i) => {
+            const on = inView && (hover === null || hover === i);
+            return (
+              <div
+                key={s.n}
+                onMouseEnter={() => setHover(i)}
+                onMouseLeave={() => setHover(null)}
+                className={cn(
+                  "group rounded-2xl border border-border bg-surface-2 p-6 transition-all duration-500 sm:p-7",
+                  hover === i ? "-translate-y-1 border-foreground/15 bg-surface card-lift" : "card-soft",
+                )}
+                style={{ animation: inView ? `slide-in-up 0.7s cubic-bezier(0.16,1,0.3,1) ${i * 120}ms both` : undefined }}
+              >
+                <div className="flex items-baseline gap-3">
+                  <span className="num text-xs text-muted-foreground">{s.n}</span>
+                  <h3 className="text-lg font-semibold tracking-tight">{s.title}</h3>
+                </div>
+                <p className="mt-2 min-h-[2.5rem] text-sm text-muted-foreground">{s.copy}</p>
+                <div className="mt-6">{s.render(on)}</div>
               </div>
-              <p className="mt-2 text-sm text-muted-foreground">{s.line}</p>
-              <div className="mt-8 flex-1">
-                <s.UI live={hover === i} />
-              </div>
-            </li>
-          ))}
-        </ol>
+            );
+          })}
+        </div>
       </div>
     </section>
   );
