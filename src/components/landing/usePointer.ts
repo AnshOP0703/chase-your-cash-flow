@@ -12,42 +12,67 @@ export function useInteractive() {
 }
 
 /**
- * Tracks the cursor inside an element and exposes it as CSS vars:
- * --px/--py (-1..1 from centre) and --cx/--cy (px, for spotlights).
+ * Tracks the cursor inside an element with spring smoothing and exposes it as
+ * CSS vars: --px/--py (-1..1 from centre) and --cx/--cy (px, for spotlights).
  */
-export function usePointerVars<T extends HTMLElement>() {
+export function usePointerVars<T extends HTMLElement>(stiffness = 0.09) {
   const ref = useRef<T | null>(null);
   const active = useInteractive();
 
   useEffect(() => {
     const el = ref.current;
     if (!el || !active) return;
-    let frame = 0;
-    const onMove = (e: PointerEvent) => {
-      if (frame) return;
-      frame = requestAnimationFrame(() => {
-        frame = 0;
-        const r = el.getBoundingClientRect();
-        const x = e.clientX - r.left;
-        const y = e.clientY - r.top;
-        el.style.setProperty("--px", String(((x / r.width) * 2 - 1).toFixed(3)));
-        el.style.setProperty("--py", String(((y / r.height) * 2 - 1).toFixed(3)));
-        el.style.setProperty("--cx", `${x}px`);
-        el.style.setProperty("--cy", `${y}px`);
+    let raf = 0;
+    let running = false;
+    const target = { px: 0, py: 0, cx: 0, cy: 0 };
+    const cur = { px: 0, py: 0, cx: 0, cy: 0 };
+
+    const loop = () => {
+      let moving = false;
+      (Object.keys(cur) as (keyof typeof cur)[]).forEach((k) => {
+        const d = target[k] - cur[k];
+        if (Math.abs(d) > 0.0008) moving = true;
+        cur[k] += d * stiffness;
       });
+      el.style.setProperty("--px", cur.px.toFixed(4));
+      el.style.setProperty("--py", cur.py.toFixed(4));
+      el.style.setProperty("--cx", `${cur.cx.toFixed(1)}px`);
+      el.style.setProperty("--cy", `${cur.cy.toFixed(1)}px`);
+      if (moving) {
+        raf = requestAnimationFrame(loop);
+      } else {
+        running = false;
+      }
+    };
+    const start = () => {
+      if (running) return;
+      running = true;
+      raf = requestAnimationFrame(loop);
+    };
+
+    const onMove = (e: PointerEvent) => {
+      const r = el.getBoundingClientRect();
+      const x = e.clientX - r.left;
+      const y = e.clientY - r.top;
+      target.px = (x / r.width) * 2 - 1;
+      target.py = (y / r.height) * 2 - 1;
+      target.cx = x;
+      target.cy = y;
+      start();
     };
     const onLeave = () => {
-      el.style.setProperty("--px", "0");
-      el.style.setProperty("--py", "0");
+      target.px = 0;
+      target.py = 0;
+      start();
     };
     el.addEventListener("pointermove", onMove);
     el.addEventListener("pointerleave", onLeave);
     return () => {
       el.removeEventListener("pointermove", onMove);
       el.removeEventListener("pointerleave", onLeave);
-      if (frame) cancelAnimationFrame(frame);
+      cancelAnimationFrame(raf);
     };
-  }, [active]);
+  }, [active, stiffness]);
 
   return { ref, active };
 }
@@ -108,4 +133,61 @@ export function useCycle(steps: number, ms = 1800) {
     return () => clearInterval(id);
   }, [steps, ms]);
   return i;
+}
+
+/** 0..1 progress of an element travelling through the viewport. */
+export function useScrollProgress<T extends HTMLElement>() {
+  const ref = useRef<T | null>(null);
+  const [p, setP] = useState(0);
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    let raf = 0;
+    const measure = () => {
+      raf = 0;
+      const r = el.getBoundingClientRect();
+      const total = r.height + window.innerHeight;
+      const seen = window.innerHeight - r.top;
+      setP(Math.min(1, Math.max(0, seen / total)));
+    };
+    const onScroll = () => {
+      if (!raf) raf = requestAnimationFrame(measure);
+    };
+    measure();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    window.addEventListener("resize", onScroll);
+    return () => {
+      window.removeEventListener("scroll", onScroll);
+      window.removeEventListener("resize", onScroll);
+      if (raf) cancelAnimationFrame(raf);
+    };
+  }, []);
+  return { ref, progress: p };
+}
+
+/** Types out a string, character by character. Restarts whenever `text` changes. */
+export function useTypewriter(text: string, start: boolean, speed = 22) {
+  const [out, setOut] = useState("");
+  const [done, setDone] = useState(false);
+  useEffect(() => {
+    setOut("");
+    setDone(false);
+    if (!start) return;
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+      setOut(text);
+      setDone(true);
+      return;
+    }
+    let i = 0;
+    const id = setInterval(() => {
+      i += 1;
+      setOut(text.slice(0, i));
+      if (i >= text.length) {
+        clearInterval(id);
+        setDone(true);
+      }
+    }, speed);
+    return () => clearInterval(id);
+  }, [text, start, speed]);
+  return { out, done };
 }

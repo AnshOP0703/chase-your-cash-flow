@@ -5,10 +5,11 @@ import { Problem } from "@/components/landing/Problem";
 import { HowItWorks } from "@/components/landing/HowItWorks";
 import { ChaseEngine } from "@/components/landing/ChaseEngine";
 import { Dashboard } from "@/components/landing/Dashboard";
+import { Channels } from "@/components/landing/Channels";
+import { Features } from "@/components/landing/Features";
 import { Markets } from "@/components/landing/Markets";
 import { Testimonials } from "@/components/landing/Testimonials";
 import { Pricing } from "@/components/landing/Pricing";
-import { Audience } from "@/components/landing/Audience";
 import { ClientScores } from "@/components/landing/ClientScores";
 import { MobileCtaBar } from "@/components/landing/MobileCtaBar";
 import { Faq, faqs } from "@/components/landing/Faq";
@@ -23,7 +24,7 @@ export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
       { title: TITLE },
-      { name: "theme-color", content: "#080808" },
+      { name: "theme-color", content: "#F7F7F3" },
       { name: "description", content: DESCRIPTION },
       { property: "og:title", content: TITLE },
       { property: "og:description", content: DESCRIPTION },
@@ -88,9 +89,10 @@ function Landing() {
         <Problem />
         <HowItWorks />
         <ChaseEngine />
+        <Channels />
         <Dashboard />
         <ClientScores />
-        <Audience />
+        <Features />
         <Markets />
         <Testimonials />
         <Pricing />

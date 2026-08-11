@@ -1,73 +1,115 @@
 import { useState } from "react";
+import { Check } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useInView, useTypewriter } from "./usePointer";
 
-const tones = {
-  Gentle: {
-    channel: "WhatsApp · Day 7",
-    msg: "Hi Priya, just a quick reminder that invoice #0042 is due.",
+const tones = [
+  {
+    id: "Gentle",
+    text: "Hi Priya — just a quick reminder that invoice #0042 is due.",
+    time: "Day 7 · 10:02",
   },
-  Standard: {
-    channel: "WhatsApp · Day 14",
-    msg: "Hi Priya, invoice #0042 is now overdue. You can pay here.",
+  {
+    id: "Standard",
+    text: "Hi Priya, invoice #0042 is now overdue. You can pay here.",
+    time: "Day 14 · 09:30",
   },
-  Firm: {
-    channel: "WhatsApp · Day 21",
-    msg: "Invoice #0042 is 14 days overdue. Please arrange payment today.",
+  {
+    id: "Firm",
+    text: "Invoice #0042 is 14 days overdue. Please arrange payment today.",
+    time: "Day 21 · 09:00",
   },
-} as const;
-
-type Tone = keyof typeof tones;
-const keys = Object.keys(tones) as Tone[];
+];
 
 export function ChaseEngine() {
-  const [tone, setTone] = useState<Tone>("Gentle");
-  const active = tones[tone];
+  const { ref, inView } = useInView<HTMLElement>(0.3);
+  const [tone, setTone] = useState(0);
+  const active = tones[tone]!;
+  const { out, done } = useTypewriter(active.text, inView, 18);
 
   return (
-    <section id="product" aria-labelledby="chase-heading" className="scroll-mt-20 border-b border-border py-24 sm:py-32">
-      <div className="container-page grid gap-14 lg:grid-cols-2 lg:items-center lg:gap-20">
+    <section
+      ref={ref}
+      id="product"
+      aria-labelledby="chase-heading"
+      className="scroll-mt-20 border-t border-border py-24 sm:py-36"
+    >
+      <div className="container-page grid gap-14 lg:grid-cols-[0.9fr_1.1fr] lg:items-center lg:gap-20">
         <div>
-          <h2 id="chase-heading" className="text-3xl font-semibold tracking-[-0.03em] sm:text-5xl">
+          <h2 id="chase-heading" className="text-3xl leading-[1.05] font-semibold tracking-[-0.035em] sm:text-5xl">
             Friendly first.
             <span className="block text-muted-foreground">Firmer when needed.</span>
           </h2>
-          <div role="tablist" aria-label="Reminder tone" className="mt-9 inline-flex rounded-md border border-border p-1">
-            {keys.map((k) => (
+          <p className="mt-6 max-w-sm text-muted-foreground">
+            Choose the tone. Tagada writes and sends every follow-up.
+          </p>
+
+          <div
+            role="tablist"
+            aria-label="Message tone"
+            className="mt-8 inline-flex rounded-full border border-border bg-surface p-1"
+          >
+            {tones.map((t, i) => (
               <button
-                key={k}
+                key={t.id}
                 role="tab"
-                aria-selected={tone === k}
-                onClick={() => setTone(k)}
+                aria-selected={tone === i}
+                onClick={() => setTone(i)}
                 className={cn(
-                  "rounded px-4 py-2 text-sm font-medium tracking-tight transition-colors focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none",
-                  tone === k ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground",
+                  "rounded-full px-4 py-2 text-sm transition-all duration-300 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none",
+                  tone === i
+                    ? "bg-foreground text-background"
+                    : "text-muted-foreground hover:text-foreground",
                 )}
               >
-                {k}
+                {t.id}
               </button>
             ))}
           </div>
         </div>
 
-        <div className="rounded-xl border border-border bg-surface p-5 sm:p-7">
+        <div className="rounded-2xl border border-border bg-surface p-6 card-lift sm:p-8">
           <div className="flex items-center gap-3 border-b border-border pb-4">
-            <span className="flex size-9 items-center justify-center rounded-full bg-surface-2 text-xs font-semibold">
-              P
-            </span>
+            <span className="grid size-9 place-items-center rounded-full bg-secondary text-xs font-semibold">P</span>
             <div>
               <p className="text-sm font-medium tracking-tight">Priya · Northline Creative</p>
-              <p className="text-xs text-muted-foreground">{active.channel}</p>
+              <p className="text-xs text-muted-foreground">WhatsApp Business</p>
             </div>
           </div>
-          <div key={tone} className="mt-6" style={{ animation: "row-in 0.35s cubic-bezier(0.16,1,0.3,1) both" }}>
-            <p className="max-w-sm rounded-lg rounded-bl-sm bg-surface-2 px-4 py-3 text-sm leading-relaxed">
-              {active.msg}
-            </p>
-            <div className="mt-3 max-w-sm rounded-lg border border-border px-4 py-3">
-              <p className="text-xs text-muted-foreground">Invoice #0042 · ₹48,000</p>
-              <p className="mt-1 text-sm font-medium text-primary">Pay now →</p>
+
+          <div className="min-h-[220px] space-y-3 pt-6">
+            <div className="max-w-[80%] rounded-2xl rounded-tl-sm border border-border bg-surface-2 px-4 py-3 text-sm">
+              Invoice #0042 · ₹48,000 · due 14 March
+              <span className="mt-1 block text-[0.7rem] text-muted-foreground">Day 0 · 11:15</span>
             </div>
-            <p className="mt-3 text-xs text-muted-foreground">Delivered · 09:14</p>
+
+            <div
+              key={active.id}
+              className="ml-auto max-w-[85%] rounded-2xl rounded-tr-sm bg-soft px-4 py-3 text-sm text-foreground"
+              style={{ animation: "slide-in-up 0.45s cubic-bezier(0.16,1,0.3,1) both" }}
+            >
+              {out}
+              {!done && (
+                <span className="ml-0.5 inline-block h-4 w-px translate-y-0.5 bg-deep" style={{ animation: "caret 1s steps(1) infinite" }} />
+              )}
+              <span className="mt-1.5 flex items-center justify-end gap-1 text-[0.7rem] text-muted-foreground">
+                {active.time}
+                <Check
+                  aria-hidden="true"
+                  strokeWidth={2.5}
+                  className={cn("size-3 transition-colors duration-500", done ? "text-primary" : "text-muted-foreground/40")}
+                />
+              </span>
+            </div>
+
+            {done && (
+              <div
+                className="ml-auto w-fit rounded-full border border-border px-3 py-1.5 text-[0.7rem] text-muted-foreground"
+                style={{ animation: "slide-in-up 0.4s cubic-bezier(0.16,1,0.3,1) both" }}
+              >
+                Pay link attached · UPI, card, bank transfer
+              </div>
+            )}
           </div>
         </div>
       </div>
