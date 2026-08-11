@@ -1,42 +1,39 @@
-const columns = [
-  { title: "Product", links: ["How it works", "Pricing", "FAQ"] },
-  { title: "Company", links: ["About", "Blog", "Contact"] },
-  { title: "Legal", links: ["Privacy Policy", "Terms", "Security"] },
+const groups = [
+  { title: "Product", links: [["How it works", "#how-it-works"], ["Pricing", "#pricing"], ["FAQ", "#faq"]] },
+  { title: "Company", links: [["About", "#top"], ["Contact", "mailto:hello@tagada.app"]] },
+  { title: "Legal", links: [["Privacy", "#top"], ["Terms", "#top"], ["Security", "#top"]] },
 ];
 
 export function Footer() {
   return (
-    <footer className="border-t border-border bg-background py-14">
-      <div className="container-page grid gap-10 sm:grid-cols-2 lg:grid-cols-[2fr_repeat(3,1fr)]">
-        <div className="max-w-xs">
-          <p className="text-lg font-semibold tracking-tight">
-            Tagada
-          </p>
-          <p className="mt-3 leading-relaxed text-muted-foreground">
-            Invoicing that chases unpaid invoices for you, in India and worldwide.
+    <footer className="border-t border-border py-16">
+      <div className="container-page grid gap-12 sm:grid-cols-[1.4fr_repeat(3,1fr)]">
+        <div>
+          <p className="text-[1.05rem] font-semibold tracking-[-0.035em]">Tagada</p>
+          <p className="mt-3 max-w-xs text-sm text-muted-foreground">
+            Invoicing that chases unpaid revenue for you.
           </p>
         </div>
-        {columns.map((col) => (
-          <nav key={col.title} aria-label={col.title}>
-            <h2 className="text-sm font-semibold">{col.title}</h2>
-            <ul className="mt-4 space-y-2 text-sm text-muted-foreground">
-              {col.links.map((l) => (
-                <li key={l}>
-                  {/* TODO: replace placeholder hrefs with real pages */}
+        {groups.map((g) => (
+          <div key={g.title}>
+            <p className="eyebrow">{g.title}</p>
+            <ul className="mt-4 space-y-2.5 text-sm">
+              {g.links.map(([label, href]) => (
+                <li key={label}>
                   <a
-                    href="#"
-                    className="rounded transition-colors hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+                    href={href}
+                    className="rounded text-muted-foreground transition-colors hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
                   >
-                    {l}
+                    {label}
                   </a>
                 </li>
               ))}
             </ul>
-          </nav>
+          </div>
         ))}
       </div>
-      <div className="container-page mt-12 border-t border-border pt-6 text-sm text-muted-foreground">
-        <p>© {new Date().getFullYear()} Tagada. All rights reserved.</p>
+      <div className="container-page mt-14 border-t border-border pt-6 text-xs text-muted-foreground">
+        © {new Date().getFullYear()} Tagada
       </div>
     </footer>
   );
