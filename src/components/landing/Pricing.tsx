@@ -17,19 +17,19 @@ export function Pricing() {
   const { ref, inView } = useInView<HTMLElement>(0.2);
 
   return (
-    <section ref={ref} id="pricing" aria-labelledby="pricing-heading" className="scroll-mt-20 border-t border-border py-24 sm:py-36">
+    <section ref={ref} id="pricing" aria-labelledby="pricing-heading" className="scroll-mt-20 border-t border-border section-y">
       <div className="container-page">
         <h2 id="pricing-heading" className="max-w-lg text-3xl leading-[1.05] font-semibold tracking-[-0.035em] sm:text-5xl">
           Simple pricing.
           <span className="block text-muted-foreground">Less chasing.</span>
         </h2>
 
-        <div className="mt-14 grid gap-5 md:grid-cols-3">
+        <div className="mt-12 grid gap-4 md:grid-cols-3">
           {plans.map((p, i) => (
             <div
               key={p.name}
               className={cn(
-                "group rounded-2xl border p-7 transition-all duration-500 hover:-translate-y-1.5 hover:card-lift",
+                "group rounded-xl border p-6 transition-all duration-500 hover:-translate-y-1.5 hover:card-lift",
                 p.featured
                   ? "border-foreground/15 bg-surface card-lift"
                   : "border-border bg-surface-2 hover:border-foreground/15 hover:bg-surface",
@@ -42,7 +42,7 @@ export function Pricing() {
                   <span className="rounded-full bg-soft px-2.5 py-1 text-[0.7rem] text-deep">Most popular</span>
                 )}
               </div>
-              <p className="mt-6 text-4xl font-semibold tracking-[-0.03em]">
+              <p className="mt-6 text-[2.25rem] font-semibold tracking-[-0.03em]">
                 <Price amount={p.price} start={inView} />
                 <span className="ml-1 text-sm font-normal text-muted-foreground">/ month</span>
               </p>

@@ -58,10 +58,12 @@ export function Nav() {
             href="#top"
             className="flex items-center gap-2 rounded text-[1.05rem] font-semibold tracking-[-0.035em] focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
           >
-            <span className="grid size-6 place-items-center rounded-md bg-foreground text-[0.7rem] font-semibold text-background">
-              T
+            <span aria-hidden="true" className="flex items-end gap-[3px]">
+              <span className="block h-2 w-[3px] rounded-full bg-foreground/35" />
+              <span className="block h-3.5 w-[3px] rounded-full bg-foreground/60" />
+              <span className="block h-5 w-[3px] rounded-full bg-primary" />
             </span>
-            Tagada
+            <span className="tracking-[-0.04em]">Tagada</span>
           </a>
 
           <div className="flex items-center gap-1 sm:gap-2">
