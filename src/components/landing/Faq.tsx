@@ -15,10 +15,10 @@ export const faqs = [
 
 export function Faq() {
   return (
-    <section id="faq" aria-labelledby="faq-heading" className="scroll-mt-20 border-t border-border py-24 sm:py-36">
+    <section id="faq" aria-labelledby="faq-heading" className="scroll-mt-20 border-t border-border section-y">
       <div className="container-page grid gap-10 lg:grid-cols-[0.7fr_1.3fr] lg:gap-20">
         <h2 id="faq-heading" className="text-3xl font-semibold tracking-[-0.035em] sm:text-4xl">
-          Questions
+          Questions, answered.
         </h2>
         <Accordion type="single" collapsible className="w-full">
           {faqs.map((f) => (

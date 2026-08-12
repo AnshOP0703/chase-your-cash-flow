@@ -191,3 +191,55 @@ export function useTypewriter(text: string, start: boolean, speed = 22) {
   }, [text, start, speed]);
   return { out, done };
 }
+
+/** Raw window scroll position, throttled to animation frames. */
+export function useScrollY() {
+  const [y, setY] = useState(0);
+  useEffect(() => {
+    let raf = 0;
+    const measure = () => {
+      raf = 0;
+      setY(window.scrollY);
+    };
+    const onScroll = () => {
+      if (!raf) raf = requestAnimationFrame(measure);
+    };
+    measure();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => {
+      window.removeEventListener("scroll", onScroll);
+      if (raf) cancelAnimationFrame(raf);
+    };
+  }, []);
+  return y;
+}
+
+/**
+ * Steps through a sequence once started, holding on the last step before
+ * looping. `hold` lets the finished state breathe.
+ */
+export function useSequence(count: number, start: boolean, step = 1400, hold = 3200) {
+  const [i, setI] = useState(-1);
+  useEffect(() => {
+    if (!start) return;
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+      setI(count - 1);
+      return;
+    }
+    let t: ReturnType<typeof setTimeout>;
+    const run = (n: number) => {
+      t = setTimeout(
+        () => {
+          const next = n >= count - 1 ? 0 : n + 1;
+          setI(next);
+          run(next);
+        },
+        n >= count - 1 ? hold : step,
+      );
+    };
+    setI(0);
+    run(0);
+    return () => clearTimeout(t);
+  }, [count, start, step, hold]);
+  return i;
+}
