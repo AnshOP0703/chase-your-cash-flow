@@ -1,28 +1,55 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { cn } from "@/lib/utils";
-import { useInView, useCountUp } from "./usePointer";
+import { useInView } from "./usePointer";
+import { INVOICE } from "./story";
+
+const OUTSTANDING = 514667;
+const bars = [38, 52, 44, 66, 58, 79, 92];
+
+/** Tweens toward a target whenever it changes. */
+function useTween(target: number, start: boolean, duration = 1100) {
+  const [v, setV] = useState(0);
+  const from = useRef(0);
+  useEffect(() => {
+    if (!start) return;
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+      from.current = target;
+      setV(target);
+      return;
+    }
+    const a = from.current;
+    const t0 = performance.now();
+    let raf = 0;
+    const tick = (t: number) => {
+      const p = Math.min(1, (t - t0) / duration);
+      const val = Math.round(a + (target - a) * (1 - Math.pow(1 - p, 3)));
+      setV(val);
+      from.current = val;
+      if (p < 1) raf = requestAnimationFrame(tick);
+    };
+    raf = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(raf);
+  }, [target, start, duration]);
+  return v;
+}
 
 const rows = [
-  { name: "Northline Creative", due: "14 Mar", amount: "₹48,000", state: "Paid" },
+  { name: INVOICE.client, due: "14 Mar", amount: INVOICE.amount, state: "Overdue", hero: true },
   { name: "Vertex Labs", due: "02 Mar", amount: "₹1,20,000", state: "Reminder sent" },
   { name: "Patel & Sons", due: "18 Feb", amount: "₹86,500", state: "WhatsApp sent" },
   { name: "Mira Interiors", due: "31 Jan", amount: "₹2,12,167", state: "Overdue" },
 ];
 
-const bars = [38, 52, 44, 66, 58, 79, 92];
-
 export function Dashboard() {
   const { ref, inView } = useInView<HTMLElement>(0.2);
-  const outstanding = useCountUp(466667, inView);
-  const received = useCountUp(48000, inView);
-  const [flip, setFlip] = useState(false);
+  const [landed, setLanded] = useState(false);
   const [toast, setToast] = useState(false);
 
   useEffect(() => {
     if (!inView) return;
-    const a = setTimeout(() => setFlip(true), 2400);
-    const b = setTimeout(() => setToast(true), 2600);
-    const c = setTimeout(() => setToast(false), 7200);
+    const a = setTimeout(() => setLanded(true), 2200);
+    const b = setTimeout(() => setToast(true), 2400);
+    const c = setTimeout(() => setToast(false), 7400);
     return () => {
       clearTimeout(a);
       clearTimeout(b);
@@ -30,25 +57,38 @@ export function Dashboard() {
     };
   }, [inView]);
 
+  const outstanding = useTween(landed ? OUTSTANDING - INVOICE.amountValue : OUTSTANDING, inView);
+  const received = useTween(landed ? INVOICE.amountValue : 0, inView, 900);
+
   return (
-    <section ref={ref} aria-labelledby="dash-heading" className="border-t border-border py-24 sm:py-36">
+    <section ref={ref} aria-labelledby="dash-heading" className="border-t border-border section-y">
       <div className="container-page">
-        <h2 id="dash-heading" className="max-w-xl text-3xl leading-[1.05] font-semibold tracking-[-0.035em] sm:text-5xl">
+        <h2 id="dash-heading" className="max-w-xl text-3xl leading-[1.04] font-semibold tracking-[-0.04em] sm:text-[3.25rem]">
           Everything after the invoice.
-          <span className="block text-muted-foreground">Handled.</span>
+          <span className="block font-normal text-muted-foreground">Handled.</span>
         </h2>
 
-        <div className="relative mt-14 overflow-hidden rounded-2xl border border-border bg-surface card-lift">
+        <div
+          className={cn(
+            "relative mt-12 overflow-hidden rounded-2xl border bg-surface transition-colors duration-1000 card-lift",
+            landed ? "border-primary/25" : "border-border",
+          )}
+        >
           <div className="grid gap-px bg-border sm:grid-cols-3">
             <div className="bg-surface p-6">
               <p className="eyebrow">Outstanding</p>
               <p className="num mt-3 text-3xl font-semibold">₹{outstanding.toLocaleString("en-IN")}</p>
-              <p className="mt-2 text-sm text-muted-foreground">12 invoices · 3 overdue</p>
+              <p className="mt-2 text-sm text-muted-foreground">{landed ? "11 invoices · 2 overdue" : "12 invoices · 3 overdue"}</p>
             </div>
-            <div className="bg-surface p-6">
+            <div className={cn("p-6 transition-colors duration-1000", landed ? "bg-soft/50" : "bg-surface")}>
               <p className="eyebrow">Received today</p>
-              <p className="num mt-3 text-3xl font-semibold text-primary">₹{received.toLocaleString("en-IN")}</p>
-              <p className="mt-2 text-sm text-muted-foreground">Northline Creative · UPI</p>
+              <p
+                className={cn("num mt-3 text-3xl font-semibold transition-colors duration-700", landed ? "text-primary" : "text-muted-foreground/40")}
+                style={landed ? { animation: "amount-pop 0.9s cubic-bezier(0.16,1,0.3,1)" } : undefined}
+              >
+                ₹{received.toLocaleString("en-IN")}
+              </p>
+              <p className="mt-2 text-sm text-muted-foreground">{INVOICE.client} · UPI</p>
             </div>
             <div className="bg-surface p-6">
               <p className="eyebrow">Collection rate</p>
@@ -56,7 +96,10 @@ export function Dashboard() {
                 {bars.map((h, i) => (
                   <span
                     key={i}
-                    className={cn("w-full rounded-sm transition-all duration-700 ease-[cubic-bezier(0.16,1,0.3,1)]", i === bars.length - 1 ? "bg-primary" : "bg-secondary")}
+                    className={cn(
+                      "w-full rounded-sm transition-all duration-700 ease-[cubic-bezier(0.16,1,0.3,1)]",
+                      i === bars.length - 1 && landed ? "bg-primary" : "bg-secondary",
+                    )}
                     style={{ height: inView ? `${h}%` : "4%", transitionDelay: `${i * 70}ms` }}
                   />
                 ))}
@@ -78,11 +121,11 @@ export function Dashboard() {
               </thead>
               <tbody>
                 {rows.map((r, i) => {
-                  const paid = r.state === "Paid" || (flip && r.name === "Patel & Sons");
+                  const paid = Boolean(r.hero) && landed;
                   return (
                     <tr
                       key={r.name}
-                      className="border-t border-border transition-colors hover:bg-surface-2"
+                      className={cn("border-t border-border transition-colors duration-700", paid ? "bg-soft/40" : "hover:bg-surface-2")}
                       style={{ animation: inView ? `row-in 0.6s cubic-bezier(0.16,1,0.3,1) ${i * 110}ms both` : undefined }}
                     >
                       <td className="py-3.5 font-medium tracking-tight">{r.name}</td>
@@ -115,9 +158,9 @@ export function Dashboard() {
               className="absolute right-5 bottom-5 flex items-center gap-3 rounded-xl border border-border bg-surface px-4 py-3 text-sm card-lift"
               style={{ animation: "slide-in-up 0.5s cubic-bezier(0.16,1,0.3,1) both" }}
             >
-              <span className="size-1.5 rounded-full bg-primary" />
-              <span className="num">₹86,500</span>
-              <span className="text-muted-foreground">received · Patel &amp; Sons</span>
+              <span className="size-1.5 rounded-full bg-primary" style={{ animation: "tag-pulse 2s ease-in-out infinite" }} />
+              <span className="num">{INVOICE.amount}</span>
+              <span className="text-muted-foreground">received · {INVOICE.client}</span>
             </div>
           )}
         </div>
