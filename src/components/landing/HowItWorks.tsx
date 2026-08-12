@@ -73,6 +73,8 @@ export function HowItWorks() {
               ))}
             </ol>
           </div>
+          {/* scroll runway that drives the steps above */}
+          <div aria-hidden="true" className="hidden lg:block lg:h-[120vh]" />
         </div>
 
         {/* One product surface that morphs between the three steps. */}
@@ -192,9 +194,6 @@ export function HowItWorks() {
           </div>
         </div>
       </div>
-
-      {/* scroll runway that drives the steps above */}
-      <div aria-hidden="true" className="h-[70vh] lg:h-[110vh]" />
     </section>
   );
 }
