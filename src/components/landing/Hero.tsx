@@ -1,123 +1,116 @@
-import { useEffect, useState } from "react";
-import { Send, Bell, MessageCircle, Check, ArrowDown } from "lucide-react";
+import { ArrowDown, Check } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { MagneticCta } from "./MagneticCta";
-import { usePointerVars } from "./usePointer";
+import { usePointerVars, useSequence, useScrollY } from "./usePointer";
+import { INVOICE, COLLECTION } from "./story";
 
-const steps = [
-  { icon: Send, label: "Invoice sent", meta: "Email" },
-  { icon: Bell, label: "Reminder", meta: "Day 7" },
-  { icon: MessageCircle, label: "WhatsApp", meta: "Day 14" },
-  { icon: Check, label: "Payment received", meta: "UPI" },
+/** Where each collection event floats around the invoice, and how deep it sits. */
+const orbits = [
+  { top: "6%", left: "-4%", depth: 30, delay: "0s" },
+  { top: "26%", right: "-6%", depth: 44, delay: "1.2s" },
+  { bottom: "22%", left: "-8%", depth: 38, delay: "0.6s" },
+  { bottom: "2%", right: "-2%", depth: 26, delay: "1.8s" },
+  { top: "48%", left: "50%", depth: 0, delay: "0s" },
 ];
-
-/** Advances through the story, holding on the PAID state before restarting. */
-function useStory(count: number) {
-  const [i, setI] = useState(0);
-  useEffect(() => {
-    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
-      setI(count - 1);
-      return;
-    }
-    let t: ReturnType<typeof setTimeout>;
-    const tick = (n: number) => {
-      t = setTimeout(
-        () => {
-          const next = (n + 1) % count;
-          setI(next);
-          tick(next);
-        },
-        n === count - 1 ? 3400 : 2200,
-      );
-    };
-    tick(0);
-    return () => clearTimeout(t);
-  }, [count]);
-  return i;
-}
 
 export function Hero() {
   const { ref, active } = usePointerVars<HTMLElement>();
-  const step = useStory(steps.length);
-  const paid = step === steps.length - 1;
+  const step = useSequence(COLLECTION.length, true, 1500, 3600);
+  const paid = step === COLLECTION.length - 1;
+  const y = useScrollY();
+
+  // The invoice recedes as the page scrolls — it becomes the invoice discussed
+  // in the problem section below.
+  const t = Math.min(1, y / 700);
 
   return (
     <section id="top" ref={ref} className="relative isolate overflow-hidden">
-      {/* background: barely-there grid + green wash + cursor light */}
-      <div aria-hidden="true" className="pointer-events-none absolute inset-0 grid-lines opacity-70" />
+      <div aria-hidden="true" className="pointer-events-none absolute inset-0 grid-lines opacity-60" />
       <div
         aria-hidden="true"
-        className="pointer-events-none absolute inset-x-0 top-[-10%] h-[520px]"
+        className="pointer-events-none absolute inset-x-0 top-[-12%] h-[560px]"
         style={{
           background:
-            "radial-gradient(60% 60% at 50% 0%, color-mix(in oklab, var(--primary) 8%, transparent), transparent 70%)",
+            "radial-gradient(58% 58% at 50% 0%, color-mix(in oklab, var(--primary) 9%, transparent), transparent 72%)",
         }}
       />
       {active && (
         <div
           aria-hidden="true"
-          className="pointer-events-none absolute inset-0 transition-opacity duration-500"
+          className="pointer-events-none absolute inset-0"
           style={{
             background:
-              "radial-gradient(360px circle at var(--cx, 50%) var(--cy, 30%), color-mix(in oklab, var(--primary) 7%, transparent), transparent 72%)",
+              "radial-gradient(380px circle at var(--cx, 50%) var(--cy, 30%), color-mix(in oklab, var(--primary) 8%, transparent), transparent 70%)",
           }}
         />
       )}
 
-      <div className="container-page relative pt-16 pb-24 sm:pt-24 lg:pb-32">
+      <div className="container-page relative pt-14 pb-20 sm:pt-20 lg:pb-28">
         <div className="mx-auto max-w-3xl text-center">
-          <p className="eyebrow inline-flex items-center gap-2">
+          <p className="label-xs inline-flex items-center gap-2 text-muted-foreground">
             <span
               className="size-1.5 rounded-full bg-primary"
               style={{ animation: "tag-pulse 2.6s ease-in-out infinite" }}
             />
-            Automated collections for modern businesses
+            Automated collections
           </p>
-          <h1 className="mt-6 text-[2.75rem] leading-[0.98] font-semibold tracking-[-0.045em] sm:text-[4.5rem]">
+          <h1 className="mt-5 text-[2.9rem] leading-[0.95] font-semibold tracking-[-0.048em] sm:text-[4.75rem]">
             Send the invoice.
-            <span className="block text-muted-foreground">We chase the payment.</span>
+            <span className="block font-normal text-muted-foreground">We chase the payment.</span>
           </h1>
-          <p className="mx-auto mt-7 max-w-xl text-[1.0625rem] leading-relaxed text-muted-foreground sm:text-lg">
-            Tagada sends the invoice, follows up automatically, and stops the moment you get paid.
+          <p className="mx-auto mt-6 max-w-md text-[1.0625rem] leading-relaxed text-muted-foreground">
+            Tagada follows up until you&rsquo;re paid — then stops.
           </p>
-          <div id="waitlist" className="mt-9 flex flex-wrap items-center justify-center gap-3 scroll-mt-28">
+          <div id="waitlist" className="mt-8 flex flex-wrap items-center justify-center gap-3 scroll-mt-28">
             <MagneticCta href="#early-access">Get early access</MagneticCta>
-            <MagneticCta href="#how-it-works" variant="ghost">
+            <MagneticCta href="#how-it-works" variant="quiet">
               See how it works <ArrowDown aria-hidden="true" strokeWidth={1.75} className="size-4" />
             </MagneticCta>
           </div>
         </div>
 
-        {/* Product visual */}
-        <div className="relative mx-auto mt-16 max-w-4xl sm:mt-20">
+        {/* Product theatre — the invoice, floating in its collection system. */}
+        <div
+          className="relative mx-auto mt-16 max-w-3xl sm:mt-20"
+          style={{
+            transform: `translate3d(0, ${-t * 60}px, 0) scale(${1 - t * 0.07})`,
+            opacity: 1 - t * 0.45,
+          }}
+        >
           <div
-            className="parallax pointer-events-none absolute -inset-x-8 -top-8 bottom-0 -z-10 rounded-[2rem] bg-soft/60 blur-2xl"
-            style={{ ["--depth" as string]: "-10px" }}
             aria-hidden="true"
+            className="parallax pointer-events-none absolute -inset-10 -z-10 rounded-[3rem] blur-3xl transition-colors duration-1000"
+            style={{
+              ["--depth" as string]: "-14px",
+              background: paid
+                ? "radial-gradient(50% 50% at 50% 50%, color-mix(in oklab, var(--primary) 18%, transparent), transparent 70%)"
+                : "radial-gradient(50% 50% at 50% 50%, color-mix(in oklab, var(--foreground) 6%, transparent), transparent 70%)",
+            }}
           />
 
-          <div
-            className="tilt-3d grid overflow-hidden rounded-2xl border border-border bg-surface card-lift md:grid-cols-[1.15fr_1fr]"
-            style={{ ["--depth" as string]: "8px" }}
-          >
-            {/* Invoice panel */}
-            <div className="border-b border-border p-7 sm:p-9 md:border-r md:border-b-0">
+          <div className="relative mx-auto w-full max-w-md">
+            {/* Invoice */}
+            <div
+              className={cn(
+                "tilt-3d relative z-10 rounded-2xl border bg-surface p-7 card-lift transition-colors duration-700",
+                paid ? "border-primary/30" : "border-border",
+              )}
+              style={{ ["--depth" as string]: "10px" }}
+            >
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
                   <span className="grid size-9 place-items-center rounded-lg bg-secondary text-xs font-semibold">
-                    NC
+                    {INVOICE.initials}
                   </span>
                   <div className="text-left">
-                    <p className="text-sm font-medium tracking-tight">Northline Creative</p>
-                    <p className="text-xs text-muted-foreground">Invoice #0042</p>
+                    <p className="text-sm font-medium tracking-tight">{INVOICE.client}</p>
+                    <p className="num text-xs text-muted-foreground">Invoice {INVOICE.number}</p>
                   </div>
                 </div>
                 <span
                   className={cn(
                     "rounded-full px-3 py-1 text-xs font-medium transition-all duration-700",
-                    paid
-                      ? "bg-soft text-deep"
-                      : "border border-border text-muted-foreground",
+                    paid ? "bg-soft text-deep" : "border border-border text-muted-foreground",
                   )}
                 >
                   {paid ? "Paid" : "Awaiting payment"}
@@ -125,102 +118,105 @@ export function Hero() {
               </div>
 
               <p
+                key={paid ? "paid" : "open"}
                 className={cn(
-                  "num mt-8 font-display text-[3.25rem] leading-none font-semibold transition-all duration-700",
-                  paid ? "scale-[1.03] text-primary" : "text-foreground",
+                  "num mt-8 font-display text-[3.5rem] leading-none font-semibold transition-colors duration-700",
+                  paid ? "text-primary" : "text-foreground",
                 )}
+                style={paid ? { animation: "amount-pop 0.9s cubic-bezier(0.16,1,0.3,1)" } : undefined}
               >
-                ₹48,000
+                {INVOICE.amount}
               </p>
-              <p className="mt-3 text-sm text-muted-foreground">Due 14 March · Design retainer</p>
+              <p className="mt-3 text-sm text-muted-foreground">
+                Due {INVOICE.due} · {INVOICE.note}
+              </p>
 
-              <div className="mt-8 h-1 w-full overflow-hidden rounded-full bg-secondary">
+              <div className="mt-7 h-1 w-full overflow-hidden rounded-full bg-secondary">
                 <div
                   className={cn(
-                    "h-full rounded-full transition-all duration-[1200ms] ease-[cubic-bezier(0.16,1,0.3,1)]",
+                    "h-full rounded-full transition-all duration-[1100ms] ease-[cubic-bezier(0.16,1,0.3,1)]",
                     paid ? "bg-primary" : "bg-foreground/25",
                   )}
-                  style={{ width: `${((step + 1) / steps.length) * 100}%` }}
+                  style={{ width: `${((step + 1) / COLLECTION.length) * 100}%` }}
                 />
               </div>
 
-              {paid && (
-                <div
-                  className="mt-6 flex items-center gap-2 text-sm text-deep"
-                  style={{ animation: "slide-in-up 0.5s cubic-bezier(0.16,1,0.3,1) both" }}
-                >
-                  <span className="grid size-6 place-items-center rounded-full bg-soft">
-                    <svg viewBox="0 0 24 24" className="draw-check size-3.5" fill="none" aria-hidden="true">
-                      <path
-                        d="M5 12.5 10 17.5 19 7"
-                        stroke="currentColor"
-                        strokeWidth="2.4"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                      />
-                    </svg>
+              <div className="mt-5 flex h-6 items-center gap-2 text-sm">
+                {paid ? (
+                  <>
+                    <span className="grid size-5 place-items-center rounded-full bg-soft text-deep">
+                      <svg viewBox="0 0 24 24" className="draw-check size-3" fill="none" aria-hidden="true">
+                        <path d="M5 12.5 10 17.5 19 7" stroke="currentColor" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round" />
+                      </svg>
+                    </span>
+                    <span className="text-deep">Settled in 16 days · 2 reminders</span>
+                  </>
+                ) : (
+                  <span className="text-xs text-muted-foreground">
+                    {COLLECTION[Math.max(0, step)]?.label} · {COLLECTION[Math.max(0, step)]?.meta}
                   </span>
-                  Settled in 16 days · 2 reminders
+                )}
+              </div>
+
+              {/* particles travelling into the invoice as payment lands */}
+              {paid &&
+                [0, 1, 2, 3, 4].map((n) => (
+                  <span
+                    key={n}
+                    aria-hidden="true"
+                    className="pointer-events-none absolute top-1/2 left-1/2 size-1.5 rounded-full bg-primary"
+                    style={{
+                      ["--fx" as string]: `${[-160, 150, -130, 170, 40][n]}px`,
+                      ["--fy" as string]: `${[-120, -90, 110, 80, -150][n]}px`,
+                      animation: `particle-fly ${1 + n * 0.14}s cubic-bezier(0.16,1,0.3,1) ${n * 0.09}s both`,
+                    }}
+                  />
+                ))}
+            </div>
+
+            {/* Floating events, at different depths */}
+            {COLLECTION.slice(0, 4).map((e, i) => {
+              const shown = step >= i;
+              const o = orbits[i]!;
+              return (
+                <div
+                  key={e.key}
+                  aria-hidden="true"
+                  className={cn(
+                    "parallax absolute hidden items-center gap-2 rounded-xl border border-border bg-surface px-3.5 py-2.5 text-xs whitespace-nowrap card-soft transition-all duration-700 lg:flex",
+                    shown ? "opacity-100" : "translate-y-2 opacity-0",
+                  )}
+                  style={{
+                    ...o,
+                    ["--depth" as string]: `${o.depth}px`,
+                    animation: shown ? `float-soft ${7 + i}s ease-in-out ${o.delay} infinite` : undefined,
+                  }}
+                >
+                  <Check
+                    strokeWidth={2.5}
+                    className={cn("size-3", shown ? "text-primary" : "text-muted-foreground/40")}
+                  />
+                  <span className="text-foreground">{e.label}</span>
+                  <span className="num text-muted-foreground">{e.meta}</span>
                 </div>
-              )}
-            </div>
-
-            {/* Collection timeline */}
-            <div className="bg-surface-2 p-7 sm:p-9">
-              <p className="eyebrow">Collection timeline</p>
-              <ol className="mt-6 space-y-1">
-                {steps.map((s, i) => {
-                  const done = i <= step;
-                  const current = i === step;
-                  const isPaid = i === steps.length - 1 && done;
-                  return (
-                    <li
-                      key={s.label}
-                      className={cn(
-                        "group flex items-center gap-3 rounded-xl px-3 py-3 transition-all duration-500",
-                        current ? "bg-surface card-soft" : "bg-transparent",
-                        done ? "opacity-100" : "opacity-40",
-                      )}
-                    >
-                      <span
-                        className={cn(
-                          "grid size-7 shrink-0 place-items-center rounded-full border transition-all duration-500",
-                          isPaid
-                            ? "border-transparent bg-primary text-primary-foreground"
-                            : done
-                              ? "border-border bg-surface text-foreground"
-                              : "border-border text-muted-foreground",
-                        )}
-                        style={isPaid ? { animation: "pulse-ring 1.8s ease-out 2" } : undefined}
-                      >
-                        <s.icon aria-hidden="true" strokeWidth={1.75} className="size-3.5" />
-                      </span>
-                      <span className="flex-1 text-sm tracking-tight">{s.label}</span>
-                      <span className="num text-xs text-muted-foreground">{s.meta}</span>
-                    </li>
-                  );
-                })}
-              </ol>
-            </div>
+              );
+            })}
           </div>
 
-          {/* Floating surfaces */}
-          <div
-            className="parallax absolute -top-7 -left-6 hidden rounded-xl border border-border bg-surface px-4 py-3 text-xs card-soft lg:block"
-            style={{ ["--depth" as string]: "26px", animation: "float-soft 8s ease-in-out infinite" }}
-          >
-            <span className="text-muted-foreground">This week</span>
-            <p className="num mt-1 text-sm font-medium">7 reminders sent</p>
-          </div>
-          <div
-            className="parallax absolute -right-6 -bottom-8 hidden items-center gap-2 rounded-xl border border-border bg-surface px-4 py-3 text-xs card-soft lg:flex"
-            style={{ ["--depth" as string]: "34px", animation: "float-soft 10s ease-in-out infinite" }}
-          >
-            <span className="size-1.5 rounded-full bg-primary" />
-            <span className="text-muted-foreground">
-              <span className="num text-foreground">₹48,000</span> received · UPI
-            </span>
-          </div>
+          {/* Mobile / tablet: the same events, as a compact list */}
+          <ol className="mt-6 flex flex-wrap justify-center gap-2 lg:hidden">
+            {COLLECTION.slice(0, 4).map((e, i) => (
+              <li
+                key={e.key}
+                className={cn(
+                  "rounded-full border border-border px-3 py-1.5 text-xs transition-all duration-500",
+                  step >= i ? "bg-surface text-foreground" : "text-muted-foreground/50",
+                )}
+              >
+                {e.label}
+              </li>
+            ))}
+          </ol>
         </div>
       </div>
     </section>
